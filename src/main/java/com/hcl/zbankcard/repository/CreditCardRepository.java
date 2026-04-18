@@ -21,4 +21,6 @@ public interface CreditCardRepository extends JpaRepository<CreditCard, UUID> {
     Optional<CreditCard> findByIdAndDeletedFalse(UUID id);
 
     boolean existsByCardNumber(String cardNumber);
+
+    long countByCustomerIdAndDeletedFalse(UUID customerId);
 }
