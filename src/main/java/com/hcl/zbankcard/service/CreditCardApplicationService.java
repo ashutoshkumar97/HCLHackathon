@@ -1,6 +1,7 @@
 package com.hcl.zbankcard.service;
 
 import com.hcl.zbankcard.dto.request.CreditCardApplicationRequest;
+import com.hcl.zbankcard.dto.response.ApplicationStatusResponse;
 import com.hcl.zbankcard.dto.response.CreditCardApplicationResponse;
 
 public interface CreditCardApplicationService {
@@ -19,4 +20,12 @@ public interface CreditCardApplicationService {
      * @return response containing application details and credit rating summary
      */
     CreditCardApplicationResponse apply(CreditCardApplicationRequest request);
+
+    /**
+     * Returns the current status of a credit card application by its application number.
+     *
+     * @param applicationNumber the unique application reference (e.g. ZBNK-20260418-001234)
+     * @return status summary including credit score and card details if approved
+     */
+    ApplicationStatusResponse getStatus(String applicationNumber);
 }

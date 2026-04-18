@@ -13,4 +13,6 @@ public interface CardPinRepository extends JpaRepository<CardPin, UUID> {
     Optional<CardPin> findByCreditCardIdAndDeletedFalse(UUID cardId);
 
     Optional<CardPin> findByIdAndDeletedFalse(UUID id);
+    
+    Optional<CardPin> findByCreditCard_CardNumber(String cardNumber);
 }

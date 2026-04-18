@@ -32,6 +32,9 @@ public class Customer extends BaseEntity {
     @Column(name = "address", nullable = false, length = 500)
     private String address;
 
+    @Column(name = "password_hash", nullable = true, length = 255)
+    private String passwordHash;
+
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<CreditCardApplication> applications = new ArrayList<>();

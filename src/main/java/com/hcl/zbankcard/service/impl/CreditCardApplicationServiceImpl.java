@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hcl.zbankcard.dto.request.CreditCardApplicationRequest;
+import com.hcl.zbankcard.dto.response.ApplicationStatusResponse;
 import com.hcl.zbankcard.dto.response.CreditCardApplicationResponse;
 import com.hcl.zbankcard.entity.CreditCard;
 import com.hcl.zbankcard.entity.CreditCardApplication;
@@ -18,11 +19,15 @@ import com.hcl.zbankcard.entity.Document;
 import com.hcl.zbankcard.entity.Employment;
 import com.hcl.zbankcard.entity.enums.ApplicationStatus;
 import com.hcl.zbankcard.exception.DuplicateCustomerException;
+import com.hcl.zbankcard.exception.ResourceNotFoundException;
 import com.hcl.zbankcard.repository.CreditCardApplicationRepository;
+import com.hcl.zbankcard.repository.CreditCardRepository;
 import com.hcl.zbankcard.repository.CreditScoreRepository;
 import com.hcl.zbankcard.repository.CustomerRepository;
 import com.hcl.zbankcard.repository.DocumentRepository;
 import com.hcl.zbankcard.repository.EmploymentRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.hcl.zbankcard.service.CardAllocationService;
 import com.hcl.zbankcard.service.CardIssuanceResult;
 import com.hcl.zbankcard.service.CreditCardApplicationService;
@@ -48,10 +53,12 @@ public class CreditCardApplicationServiceImpl implements CreditCardApplicationSe
 	private final CustomerRepository customerRepository;
 	private final CreditCardApplicationRepository applicationRepository;
 	private final CreditScoreRepository creditScoreRepository;
+	private final CreditCardRepository creditCardRepository;
 	private final EmploymentRepository employmentRepository;
 	private final DocumentRepository documentRepository;
 	private final CreditRatingService creditRatingService;
 	private final CardAllocationService cardAllocationService;
+	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	@Transactional
@@ -108,9 +115,11 @@ public class CreditCardApplicationServiceImpl implements CreditCardApplicationSe
 
 	private Customer persistCustomer(CreditCardApplicationRequest req) {
 		var info = req.getCustomerInfo();
+		String hashedPassword = passwordEncoder.encode(info.getPassword());
 		return customerRepository
 				.save(Customer.builder().name(info.getName().trim()).email(info.getEmail().toLowerCase().trim())
-						.phone(info.getPhone().trim()).dob(info.getDob()).address(info.getAddress().trim()).build());
+						.phone(info.getPhone().trim()).dob(info.getDob()).address(info.getAddress().trim())
+						.passwordHash(hashedPassword).build());
 	}
 
 	private Employment persistEmployment(CreditCardApplicationRequest req, Customer customer) {
@@ -172,5 +181,41 @@ public class CreditCardApplicationServiceImpl implements CreditCardApplicationSe
 		case REJECTED -> "We are unable to approve your application at this time.";
 		default -> "Your application has been received and is being processed.";
 		};
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ApplicationStatusResponse getStatus(String applicationNumber) {
+		CreditCardApplication application = applicationRepository
+				.findByApplicationNumberAndDeletedFalse(applicationNumber)
+				.orElseThrow(() -> new ResourceNotFoundException(
+						"Application not found: " + applicationNumber));
+
+		Integer score = creditScoreRepository
+				.findByApplicationIdAndDeletedFalse(application.getId())
+				.map(cs -> cs.getScore())
+				.orElse(null);
+
+		Optional<CreditCard> cardOpt = creditCardRepository
+				.findByApplicationIdAndDeletedFalse(application.getId());
+
+		ApplicationStatusResponse.ApplicationStatusResponseBuilder builder = ApplicationStatusResponse.builder()
+				.applicationId(application.getId())
+				.applicationNumber(application.getApplicationNumber())
+				.status(application.getStatus())
+				.appliedAt(application.getAppliedAt())
+				.additionalDocumentsRequired(application.getStatus() == ApplicationStatus.UNDER_REVIEW)
+				.creditScore(score);
+
+		cardOpt.ifPresent(card -> builder.cardDetails(
+				ApplicationStatusResponse.CardDetails.builder()
+						.maskedCardNumber(maskCardNumber(card.getCardNumber()))
+						.cardType(card.getCardType())
+						.creditLimit(card.getCreditLimit())
+						.cardStatus(card.getStatus())
+						.issuedAt(card.getIssuedAt())
+						.build()));
+
+		return builder.build();
 	}
 }

@@ -1,6 +1,7 @@
 package com.hcl.zbankcard.controller;
 
 import com.hcl.zbankcard.dto.request.CreditCardApplicationRequest;
+import com.hcl.zbankcard.dto.response.ApplicationStatusResponse;
 import com.hcl.zbankcard.dto.response.CreditCardApplicationResponse;
 import com.hcl.zbankcard.service.CreditCardApplicationService;
 import jakarta.validation.Valid;
@@ -42,5 +43,22 @@ public class CreditCardApplicationController {
                 response.getApplicationNumber(), response.getStatus());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * GET /api/v1/applications/{applicationNumber}
+     *
+     * Returns the current status of an application along with credit score
+     * and card details if the application was approved.
+     *
+     * HTTP 200 – Status retrieved successfully.
+     * HTTP 404 – Application not found.
+     */
+    @GetMapping("/{applicationNumber}")
+    public ResponseEntity<ApplicationStatusResponse> getApplicationStatus(
+            @PathVariable String applicationNumber) {
+
+        log.info("Status check for application: {}", applicationNumber);
+        return ResponseEntity.ok(applicationService.getStatus(applicationNumber));
     }
 }
