@@ -77,7 +77,7 @@ public class CardAllocationServiceImpl implements CardAllocationService {
                 .cardNumber(cardNumber)
                 .cardType(config.cardType())
                 .creditLimit(config.limit())
-                .status(CardStatus.ACTIVE)
+                .status(CardStatus.INACTIVE)
                 .issuedAt(LocalDateTime.now())
                 .build();
 
