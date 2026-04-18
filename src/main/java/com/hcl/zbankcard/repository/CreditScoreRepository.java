@@ -16,4 +16,6 @@ public interface CreditScoreRepository extends JpaRepository<CreditScore, UUID> 
     List<CreditScore> findByCustomerIdAndDeletedFalse(UUID customerId);
 
     Optional<CreditScore> findByIdAndDeletedFalse(UUID id);
+
+    Optional<CreditScore> findTopByCustomerIdAndDeletedFalseOrderByCreatedAtDesc(UUID customerId);
 }
