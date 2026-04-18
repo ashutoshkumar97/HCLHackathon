@@ -1,4 +1,4 @@
-package com.zbank.creditcard.config;
+package com.hcl.zbankcard.util;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -5,7 +5,7 @@ import java.security.SecureRandom;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CardNumbergenerator {
+public class CardNumberGenerator {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 

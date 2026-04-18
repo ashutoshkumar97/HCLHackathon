@@ -1,7 +1,7 @@
 package com.hcl.zbankcard.service.impl;
 
-import com.hcl.zbankcard.config.CardNumberGenerator;
-import com.hcl.zbankcard.config.PinHashUtil;
+import com.hcl.zbankcard.util.CardNumberGenerator;
+import com.hcl.zbankcard.util.PinHashUtil;
 import com.hcl.zbankcard.dto.request.CardIssueRequest;
 import com.hcl.zbankcard.dto.response.CardResponse;
 import com.hcl.zbankcard.entity.CardPin;
