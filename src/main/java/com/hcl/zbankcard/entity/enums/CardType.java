@@ -4,5 +4,7 @@ public enum CardType {
     VISA,
     MASTERCARD,
     RUPAY,
-    AMEX
+    AMEX,
+    GOLD,
+    PLATINUM
 }
